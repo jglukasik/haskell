@@ -24,7 +24,10 @@ sum' (x:xs) = x + sum' xs
 --By considering the terms in the Fibonacci sequence whose values do not exceed four million, 
 --find the sum of the even-valued terms.
 
-fibonacci 0 = 0
-fibonacci 1 = 1
-fibonacci n = fibonacci (n - 1) + fibonacci (n - 2);
+--fibonacci 0 = 0
+--fibonacci 1 = 1
+--fibonacci n = fibonacci (n - 1) + fibonacci (n - 2);
+
+--Generate an infinite list of fibonaci numbers
+fib = 1:2:zipWith (+) fib (tail fib)
 
