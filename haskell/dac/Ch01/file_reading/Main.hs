@@ -1,12 +1,13 @@
 import Control.Exception as C (catch, SomeException)
+import System.Directory(doesFileExist)
 import System.Environment
 
 
 main :: IO ()
 main = do
   fileName <- getLine
-  input <- C.catch (readFile fileName)
-    $ \err -> print (err::SomeException) >> return ""
+  exists <- doesFileExist fileName
+  input <- if exists then readFile fileName else return ""
   print (countWords input)
 
 
