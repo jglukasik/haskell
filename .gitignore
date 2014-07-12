@@ -1,0 +1,14 @@
+# Sample Haskell gitignore from https://github.com/github/gitignore
+l-dev
+*.o
+*.hi
+*.chi
+*.chs.h
+.virtualenv
+.hsenv
+.cabal-sandbox/
+cabal.sandbox.config
+cabal.config
+
+# My additions
+*.swp

@@ -1,14 +1,11 @@
 import Control.Exception as C (catch, SomeException)
-import System.Environment (getArgs)
+import System.Environment
 
 
 main :: IO ()
 main = do
-  args <- getArgs
-  let fileName = case args of
-       (a:_) -> a
-       _ -> "input.txt"
-  input <- C.catch $ readFile fileName
+  fileName <- getLine
+  input <- C.catch (readFile fileName)
     $ \err -> print (err::SomeException) >> return ""
   print (countWords input)
 
