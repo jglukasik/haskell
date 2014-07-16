@@ -23,8 +23,8 @@ getCoords :: [Field] -> Maybe (Float, Float)
 getCoords [] = Nothing
 getCoords [x] = Nothing
 getCoords (x:y:_) = Just (lat,long)
-  where lat = read x :: Float
-        long = read y :: Float
+  where lat = read y :: Float
+        long = read x :: Float
 
 -- Clean up the coordinates, getting rid of any possible errors (Nothings)
 cleanCoords ::(Eq a) => [Maybe a] -> [a]
