@@ -1,13 +1,17 @@
 -- Reads a CSV full of McDonald's latitude and longitudes in the USA, and prints out the ones furthest north,south,east,west
 import Text.CSV
 import Data.Maybe
+import System.Environment(getArgs)
 
 main :: IO ()
 main = do
-  let fileName = "mcdonalds.csv"
+  args <- getArgs
+  let fileName = case args of
+       (a:_) -> a
+       _ -> "mcdonalds.csv"
   input <- readFile fileName
   let csv = parseCSV fileName input
-  putStrLn "Max Lat, Min Lat, Max Long, Min Long"
+  putStrLn "Furthest north, south, east, west"
   either handleError doWork csv
 
 -- Error handling is CSV cannot be parsed
