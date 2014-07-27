@@ -1,46 +1,45 @@
 -- Parse the xml from sms backup and restore android app
 
-import Data.Map (Map, fromList, toList)
 import Text.XML.HXT.Core
 
-import System.Environment(getArgs)
 import System.Console.GetOpt
-import System.IO
+import System.Environment
 import System.Exit
+import System.IO
 
 main :: IO ()
 main = do
   argv <- getArgs
-  (al, src, dst) <- cmdlineOpts argv 
+  (al, src, dst, attr) <- cmdlineOpts argv 
   input <- readFile src 
-  [rc] <- runX (application al src dst)
+  [rc] <- runX (application al src dst attr)
   if rc >= c_err
     then exitWith (ExitFailure (0-1))
     else exitWith ExitSuccess
 
 
-cmdlineOpts :: [String] -> IO (SysConfigList, String, String)
-cmdlineOpts argv = return ([withValidate no], argv!!0, argv!!1)
+cmdlineOpts :: [String] -> IO (SysConfigList, String, String, String)
+cmdlineOpts argv = return ([withValidate no], argv!!0, argv!!1, argv!!2)
 
-application cfg src dst
+application cfg src dst attr
   = configSysVars cfg 
     >>>
     readDocument [] src
     >>>
-    processChildren (processIt `when` isElem)
+    processChildren (processIt attr `when` isElem)
     >>>
     writeDocument [] dst
     >>>
     getErrStatus
 
-processIt :: IOSArrow XmlTree XmlTree
-processIt
+processIt :: String -> IOSArrow XmlTree XmlTree
+processIt attr
   = deep 
     ( isElem 
       >>>
       hasName "sms" 
       >>>
-      getAttrValue "body" 
+      getAttrValue attr
       >>>
       arr addSpacing
       >>>
