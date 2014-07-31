@@ -1,0 +1,2 @@
+This is my input file
+Second line
