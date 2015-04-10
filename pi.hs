@@ -1,12 +1,26 @@
 import System.Random
+import System.Environment
 
-g1 = mkStdGen 1994
-g2 = mkStdGen 2015
 
-allPoints :: (Fractional a, Random a) => a -> [(a,a)]
-allPoints r = zip (randomRs (0.0, r) g1) (randomRs (0.0, r) g2)
+unif :: StdGen -> [Double]
+unif g = randoms g
 
-inCircle x = sum [ 1 | (a,b) <- x, (a**2 + b**2)**0.5 < 1.0]
+coords :: [Double] -> [(Double, Double)]
+coords (x:y:r) = (x,y):coords r
 
---approxPi :: (Fractional a, Random a) => Int -> [(a,a)] -> a
-approxPi n allPts = (fromIntegral $ inCircle $ take n $ allPts) / (fromIntegral n) * 4.0
+radius :: (Double, Double) -> Double
+radius (x,y) = (x**2 + y**2)**0.5
+
+inQuarterCircle :: [(Double, Double)] -> [Int]
+inQuarterCircle coords = [if radius (x,y) < 1.0 then 1 else 0 
+                          | (x,y) <- coords ]
+
+approxPi :: Int -> StdGen -> Double
+approxPi n g = fromIntegral numInCircle / fromIntegral n * 4.0
+  where
+    numInCircle = sum (take n . inQuarterCircle . coords . unif $ g) 
+
+main = do
+  g <- getStdGen
+  (n:_) <- getArgs
+  print $ approxPi (read n :: Int) g
