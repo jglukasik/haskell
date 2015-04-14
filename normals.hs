@@ -1,16 +1,22 @@
 import System.Random
 import System.Environment
 import Data.Map.Strict as Map
+import Graphics.EasyPlot
 import Control.Monad
 
 helpMessage :: String
-helpMessage = "Usage: ./normals BIN_WIDTH NUM_POINTS"
+helpMessage = "Usage: ./normals [-a|-g] BIN_WIDTH NUM_POINTS"
 
 unif :: StdGen -> [Double]
 unif g = randoms g
 
 coords :: [Double] -> [(Double, Double)]
 coords (x:y:r) = (x,y):coords r
+coords _ = []
+
+coords3 :: [Double] -> [(Double, Double, Double)]
+coords3 (x:y:z:r) = (x,y,z):coords3 r
+coords3 _ = []
 
 normal :: (Double, Double) -> Double
 normal (u1, u2) = (-2*log u1)**0.5*cos(2*pi*u2)
@@ -35,9 +41,13 @@ genNormals g = normals . coords . unif $ g
 main = do
   g <- getStdGen
   args <- getArgs
-  when (Prelude.null args || 'h' `elem` head args) (putStrLn helpMessage)
-  let (w:n:_) = args
+  let (opt:w:n:_) = args
   let points = take (read n::Int) $ genNormals g
-  printStars . elems $ placeInBins (read w::Double) points (fromList [])
+  if 'a' `elem` opt
+    then printStars . elems $ placeInBins (read w::Double) points (fromList [])
+    else if 'g' `elem` opt
+      then void . plot X11 $ Data2D [] [] $ coords points
+      else putStrLn helpMessage
+        
 
   
