@@ -52,6 +52,12 @@ unif g = makeP (randoms g)
   where makeP (x:y:r) = (x,y):makeP r
         makeP _ = []
 
+normals :: [P] -> [P]
+normals ((x,y):ps) = (r*cos(t), r*sin(t)) : normals ps
+  where r = (-2*log x)**0.5
+        t = 2*pi*y
+normals _ = []
+
 main :: IO ()
 main = do
   g <- newStdGen
@@ -64,14 +70,16 @@ main = do
 genScript :: StdGen -> ProcScript
 genScript g = 
   let n = 1000
-      scale = 500
+      scale = 100
       r = 2
+      
+      s = (take n . normals . unif $ g)
 
-      ps = map (pToProc scale) (take n . unif $ g)
+      ps = map (pToProc scale) s
       f1 = map (FillColor (Color 255 255 255 255)) $
                (map . uncurry $ Circle) (zip ps (replicate n (fromFloat r)))
 
-      cs = map (pToProc scale) (grahamScan . take n . unif $ g)
+      cs = map (pToProc scale) (grahamScan s)
       f2 = map (FillColor (Color 255 0 0 100)) [Polygon cs]
 
   in displayFigure Nothing Nothing (Color 0 0 0 255) (mconcat (f1 ++ f2) )
