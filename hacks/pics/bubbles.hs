@@ -4,48 +4,58 @@ import Graphics.Web.Processing.Simple
 import Graphics.Web.Processing.Html
 import System.Random
 
+-- Main function. Saves html and data file for processing animation
 main :: IO ()
 main = do
-  g <- newStdGen
+  g <- newStdGen  -- Random number generator
+  let n = 50      -- Number of circles
+  let r = 40.0    -- Radius
+  let f = (1/15)  -- Frequency
   writeHtml "processing.min.js" 
             "bubbles.pde" 
             "Bubbles demo" 
             "bubbles.html" 
-            $ bubbles g
+            $ bubbles g n f r
 
-bubbles :: StdGen -> ProcScript
-bubbles g = animateFigure Nothing Nothing 50 (Color 0 0 0 255) (bubblesf g)
+-- Driver function to create processing animation
+bubbles :: StdGen     -- g Random number generator
+        -> Int        -- n Number of circles
+        -> Proc_Float -- f Frequency
+        -> Proc_Float -- r Radius
+        -> ProcScript
+bubbles g n f r = animateFigure Nothing
+                                Nothing
+                                50
+                                (Color 0 0 0 255)
+                                (bubblesf g n f r)
 
-radius :: Proc_Float
-radius = 40
-
-speed :: Proc_Float
-speed = 15
-
+-- Scaling factor to fill entire screen
 scale :: Proc_Float
 scale = 150
 
-numCircles :: Int
-numCircles = 120
-
-bubblesf :: StdGen -> Proc_Int -> Figure
-bubblesf g n = FillColor (Color 100 255 240 50) 
-             $ LineColor (Color 255 255 255 255) 
+-- Function to create animation frames
+bubblesf :: StdGen     -- g Random number generator
+         -> Int        -- n Number of circles
+         -> Proc_Float -- f Frequency
+         -> Proc_Float -- r Radius
+         -> Proc_Int   -- t Frame number
+         -> Figure
+bubblesf g n f r t = LineColor (Color 255 255 255 255)
              $ mconcat 
              $ zipWith FillColor 
-                       (take numCircles . randColor $ g)
-                       $ (map . uncurry $ Circle) (zip ps rs)
- where rs = map ( (* radius)
+                       ( take n . randColor $ g )
+                       ( (map . uncurry $ Circle) (zip ps rs) )
+ where rs = map ( (* r)
                 . sin
-                . (* (1/speed)) 
-                . (+ intToFloat n) 
+                . (* f)
+                . (+ intToFloat t)
                 . (* scale) 
                 . fst 
-                ) (take numCircles . normals . unif $ g)
+                ) (take n . normals . unif $ g)
        ps = map (mapT ( (+ (-scale/2) )
                       . (* scale) 
                       ) 
-                ) (take numCircles . normals . unif . snd . next $ g)
+                ) (take n . normals . unif . snd . next $ g)
 
 -- Map over tuple elements
 mapT :: (a -> b) -> (a, a) -> (b, b)
@@ -61,10 +71,10 @@ randColor g = makeC (randoms g :: [Float])
 -- Infinte stream of uniformly generated points
 unif :: StdGen -> [Proc_Point]
 unif g = makeP (randoms g)
-  where makeP (x:y:r) = (fromFloat x,fromFloat y):makeP r
+  where makeP (x:y:r) = mapT fromFloat (x,y):makeP r
         makeP _ = []
 
--- Infinte stream of normally generated points
+-- Transform uniform points to normal points using the box muller transform
 normals :: [Proc_Point] -> [Proc_Point]
 normals ((x,y):ps) = (r*cos(t), r*sin(t)) : normals ps
   where r = (-2*log x)**0.5
