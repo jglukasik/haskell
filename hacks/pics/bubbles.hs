@@ -26,7 +26,7 @@ scale :: Proc_Float
 scale = 150
 
 numCircles :: Int
-numCircles = 90
+numCircles = 120
 
 bubblesf :: StdGen -> Proc_Int -> Figure
 bubblesf g n = FillColor (Color 100 255 240 50) 
@@ -42,9 +42,14 @@ bubblesf g n = FillColor (Color 100 255 240 50)
                 . (* scale) 
                 . fst 
                 ) (take numCircles . normals . unif $ g)
-       ps = map convert (take numCircles . normals . unif $ g)
-       convert p = (move $ fst p, move $ snd p)
-       move x = (+) (-scale/2) $ (*) scale x
+       ps = map (mapT ( (+ (-scale/2) )
+                      . (* scale) 
+                      ) 
+                ) (take numCircles . normals . unif . snd . next $ g)
+
+-- Map over tuple elements
+mapT :: (a -> b) -> (a, a) -> (b, b)
+mapT f (x,y) = (f x, f y)
 
 -- Infinite stream of random colors
 randColor :: StdGen -> [Color]
